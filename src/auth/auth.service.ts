@@ -5,7 +5,7 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import { UsersService } from '../users/users.service';
 import { User } from '../users/interfaces/user.interface';
-import { CreateUserDTO } from '../users/dto/create-user.dto';
+import { CustomError } from '../utils';
 
 interface PasswordHash {
   hash: string;
@@ -22,14 +22,27 @@ export class AuthService {
 
   setPassword(password: string): PasswordHash {
     const salt = randomBytes(16).toString('hex');
-    const hash = pbkdf2Sync(password, salt, 10000, 512, 'sha512').toString('hex');
+    const hash = pbkdf2Sync(
+      password,
+      salt,
+      10000,
+      512,
+      'sha512',
+      ).toString('hex');
+
     return { hash, salt };
   }
 
   async validatePassword(email: string, password: string): Promise<any> {
     const user = await this.usersService.getUser(email);
     if (!user) { return null; }
-    const hash = pbkdf2Sync(password, user.salt, 10000, 512, 'sha512').toString('hex');
+    const hash = pbkdf2Sync(
+      password, user.salt,
+      10000,
+      512,
+      'sha512',
+    ).toString('hex');
+
     if (user.hash === hash) {
       return user;
     } else {
@@ -38,17 +51,37 @@ export class AuthService {
   }
 
   async login(user: any) {
-    const payload = { email: user.email, id: user._id };
+    const { email, _id } = user;
+    const payload = { email, id: _id };
     return {
       access_token: this.jwtService.sign(payload),
     };
   }
 
   async registration(user: any ): Promise<User> {
-    const { hash, salt } = this.setPassword(user.password);
-    const userItem = { email: user.email, name: user.name, hash, salt };
+    const { email, name, password } = user;
 
-    const newUser = await this.userModel(userItem);
-    return newUser.save();
+    if (!email || !name || !password) {
+      throw new CustomError({
+        name: 'MISSING_PARAMETER',
+        message: `${!email ? 'email' : (!password ? 'password' : 'name')} is required`,
+      });
+    }
+    const foundUser = await this.usersService.getUser(email);
+
+    if (foundUser) {
+      throw new CustomError({ name: 'EMAIL_ALREADY_EXISTS', message: 'Email already exists' });
+    }
+    const { hash, salt } = this.setPassword(password);
+
+    const newUser = { email, name, hash, salt };
+    const createdUser = await this.usersService.addUser(newUser);
+
+    return createdUser;
+  }
+
+  async checkUser(email: string): Promise<User|null> {
+    const user = await this.usersService.getUser(email)
+    return user;
   }
 }

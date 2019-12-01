@@ -13,7 +13,7 @@ export class UsersService {
     return users;
   }
 
-  async getUser(email): Promise<User> {
+  async getUser(email: string): Promise<User> {
     const user = await this.userModel
       .findOne({ email })
       .exec();
