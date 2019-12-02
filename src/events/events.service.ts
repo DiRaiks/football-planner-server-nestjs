@@ -14,7 +14,7 @@ export class EventsService {
 
   async saveEvent(createEventDTO: CreateEventDTO): Promise<Event[]> {
     await this.eventModel(createEventDTO).save();
-    return  await this.eventModel.find().exec();
+    return await this.eventModel.find().exec();
   }
 
   async deleteEvent(eventID: string): Promise<any> {
@@ -32,6 +32,11 @@ export class EventsService {
 
   async editEvent(eventID, createEventDTO: CreateEventDTO): Promise<Event> {
     return await this.eventModel
-      .findByIdAndUpdate(eventID, createEventDTO, { new: true });
+      .findByIdAndUpdate(eventID, createEventDTO, { new: true }).exec();
+  }
+
+  async editEventField(eventID, field, value): Promise<Event> {
+    return await this.eventModel
+      .findByIdAndUpdate(eventID, { [field]: value }, { new: true }).exec();
   }
 }

@@ -54,7 +54,7 @@ export class EventsController {
     @Body() createEventDTO: CreateEventDTO,
   ) {
     const editedEvent = await this.eventsService.editEvent(eventID, createEventDTO);
-    if (!editedEvent) { throw new NotFoundException('Post does not exist!'); }
+    if (!editedEvent) { throw new NotFoundException('Event does not exist!'); }
     return res.status(HttpStatus.OK).json(editedEvent);
   }
 }

@@ -6,6 +6,7 @@ import { FootballPlannerModule } from './football-planner/football-planner.modul
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { EventsModule } from './events/events.module';
+import { PlayersModule } from './players/players.module';
 
 const uri = 'mongodb+srv://dirai:123123qwe@cluster0-nuyru.mongodb.net/football-dev?retryWrites=true&w=majority';
 
@@ -16,6 +17,7 @@ const uri = 'mongodb+srv://dirai:123123qwe@cluster0-nuyru.mongodb.net/football-d
     FootballPlannerModule,
     UsersModule,
     EventsModule,
+    PlayersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

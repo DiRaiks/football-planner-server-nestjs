@@ -23,9 +23,9 @@ export class UsersService {
     return newUser.save();
   }
 
-  async editUser(userID, newParams): Promise<User> {
+  async editUser(userID, newUser): Promise<User> {
     return await this.userModel
-      .findByIdAndUpdate(userID, newParams, { new: true });
+      .findByIdAndUpdate(userID, newUser, { new: true });
   }
 
   async deleteUser(userID): Promise<any> {

@@ -7,7 +7,7 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @UseGuards(AuthGuard('jwt'))
-  @Post('changeName')
+  @Post('change')
   async changeUser(@Request() req, @Body() body) {
     return await this.usersService.editUser(req.user.userId, body);
   }
