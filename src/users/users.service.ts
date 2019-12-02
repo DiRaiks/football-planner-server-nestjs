@@ -9,15 +9,13 @@ export class UsersService {
   constructor(@InjectModel('User') private readonly userModel: Model<User>) { }
 
   async getUsers(): Promise<User[]> {
-    const users = await this.userModel.find().exec();
-    return users;
+    return await this.userModel.find().exec();
   }
 
   async getUser(email: string): Promise<User> {
-    const user = await this.userModel
+    return await this.userModel
       .findOne({ email })
       .exec();
-    return user;
   }
 
   async addUser(createUserDTO: CreateUserDTO): Promise<User> {
@@ -25,15 +23,13 @@ export class UsersService {
     return newUser.save();
   }
 
-  async editUser(userID, createUserDTO: CreateUserDTO): Promise<User> {
-    const editedUser = await this.userModel
-      .findByIdAndUpdate(userID, createUserDTO, { new: true });
-    return editedUser;
+  async editUser(userID, newParams): Promise<User> {
+    return await this.userModel
+      .findByIdAndUpdate(userID, newParams, { new: true });
   }
 
   async deleteUser(userID): Promise<any> {
-    const deletedPost = await this.userModel
+    return await this.userModel
       .findByIdAndRemove(userID);
-    return deletedPost;
   }
 }

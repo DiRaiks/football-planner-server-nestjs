@@ -51,14 +51,17 @@ export class AuthService {
   }
 
   async login(user: any) {
-    const { email, _id } = user;
+    const { email, _id, name } = user;
     const payload = { email, id: _id };
     return {
-      access_token: this.jwtService.sign(payload),
+      _id,
+      email,
+      name,
+      token: this.jwtService.sign(payload),
     };
   }
 
-  async registration(user: any ): Promise<User> {
+  async registration(user: any ): Promise<any> {
     const { email, name, password } = user;
 
     if (!email || !name || !password) {
@@ -73,15 +76,10 @@ export class AuthService {
       throw new CustomError({ name: 'EMAIL_ALREADY_EXISTS', message: 'Email already exists' });
     }
     const { hash, salt } = this.setPassword(password);
-
     const newUser = { email, name, hash, salt };
-    const createdUser = await this.usersService.addUser(newUser);
+    const { _id } = await this.usersService.addUser(newUser);
+    const payload = { email, id: _id };
 
-    return createdUser;
-  }
-
-  async checkUser(email: string): Promise<User|null> {
-    const user = await this.usersService.getUser(email)
-    return user;
+    return { email, name, token: this.jwtService.sign(payload) };
   }
 }

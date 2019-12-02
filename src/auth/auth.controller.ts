@@ -21,7 +21,8 @@ export class AuthController {
   @Post('registration')
   async registration(@Body() body, @Res() res) {
     try {
-      return await this.authService.registration(body);
+      const registeredUser = await this.authService.registration(body);
+      return res.status(HttpStatus.OK).json(registeredUser);
     } catch (error) {
       return res.status(HttpStatus.BAD_REQUEST).json(error);
     }
