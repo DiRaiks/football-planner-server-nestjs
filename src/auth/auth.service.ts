@@ -52,7 +52,7 @@ export class AuthService {
 
   async login(user: any) {
     const { email, _id, name } = user;
-    const payload = { email, id: _id };
+    const payload = { email, userId: _id };
     return {
       _id,
       email,
@@ -78,7 +78,7 @@ export class AuthService {
     const { hash, salt } = this.setPassword(password);
     const newUser = { email, name, hash, salt };
     const { _id } = await this.usersService.addUser(newUser);
-    const payload = { email, id: _id };
+    const payload = { email, userId: _id };
 
     return { email, name, token: this.jwtService.sign(payload) };
   }

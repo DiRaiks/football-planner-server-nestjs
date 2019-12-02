@@ -1,10 +1,16 @@
-import { Body, Controller, Get, Post, Request, Res, UseGuards, HttpStatus } from '@nestjs/common';
+import { Body, Controller, Get, Post, Request, Res, UseGuards, HttpStatus, Headers } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { JwtService } from '@nestjs/jwt';
 import { AuthService } from './auth.service';
+import { UsersService } from '../users/users.service';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly jwtService: JwtService,
+    private readonly usersService: UsersService,
+  ) {}
 
   @UseGuards(AuthGuard('local'))
   @Post('login')
@@ -29,8 +35,9 @@ export class AuthController {
   }
 
   @UseGuards(AuthGuard('jwt'))
-  @Get('checkToken')
-  async checkToken(@Request() req) {
-    return req.user;
+  @Get('check')
+  async checkToken(@Request() req, @Headers() head) {
+    const { email, name, _id } = await this.usersService.getUser(req.user.email);
+    return { email, name, _id, token: this.jwtService.sign(req.user) };
   }
 }

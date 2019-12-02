@@ -11,7 +11,7 @@ const uri = 'mongodb+srv://dirai:123123qwe@cluster0-nuyru.mongodb.net/football-d
 
 @Module({
   imports: [
-    MongooseModule.forRoot(uri, { useNewUrlParser: true }),
+    MongooseModule.forRoot(uri, { useNewUrlParser: true, useFindAndModify: false }),
     AuthModule,
     FootballPlannerModule,
     UsersModule,

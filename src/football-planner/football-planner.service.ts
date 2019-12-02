@@ -6,7 +6,7 @@ import { CreateUserDTO } from './dto/create-user.dto';
 
 @Injectable()
 export class FootballPlannerService {
-  constructor(@InjectModel('User') private readonly userModel: Model<User>) { }
+  constructor(@InjectModel('User') private readonly userModel: Model<User>) {}
 
   async getUsers(): Promise<User[]> {
     const users = await this.userModel.find().exec();
