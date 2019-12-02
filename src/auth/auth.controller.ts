@@ -30,7 +30,7 @@ export class AuthController {
       const registeredUser = await this.authService.registration(body);
       return res.status(HttpStatus.OK).json(registeredUser);
     } catch (error) {
-      return res.status(HttpStatus.BAD_REQUEST).json(error);
+      return res.status(HttpStatus.BAD_REQUEST).json({ error });
     }
   }
 

@@ -35,7 +35,9 @@ export class AuthService {
 
   async validatePassword(email: string, password: string): Promise<any> {
     const user = await this.usersService.getUser(email);
-    if (!user) { return null; }
+    if (!user) {
+      throw new CustomError({ name: 'WRONG_EMAIL', message: 'Wrong email' });
+    }
     const hash = pbkdf2Sync(
       password, user.salt,
       10000,
@@ -46,7 +48,7 @@ export class AuthService {
     if (user.hash === hash) {
       return user;
     } else {
-      return null;
+      throw new CustomError({ name: 'WRONG_PASSWORD', message: 'Wrong password' });
     }
   }
 
