@@ -6,18 +6,21 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { EventsModule } from './events/events.module';
 import { PlayersModule } from './players/players.module';
-
-const uri = 'mongodb+srv://dirai:123123qwe@cluster0-nuyru.mongodb.net/football-dev?retryWrites=true&w=majority';
+import { ConfigModule } from './config/config.module';
+import { MongooseConfigService } from './mongoose-config/mongoose-config.service';
 
 @Module({
   imports: [
-    MongooseModule.forRoot(uri, { useNewUrlParser: true, useFindAndModify: false }),
+    ConfigModule,
+    MongooseModule.forRootAsync({
+      useClass: MongooseConfigService,
+    }),
     AuthModule,
     UsersModule,
     EventsModule,
     PlayersModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, MongooseConfigService],
 })
 export class AppModule {}
