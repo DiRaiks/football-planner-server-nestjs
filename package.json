@@ -27,6 +27,7 @@
     "@nestjs/passport": "^6.1.1",
     "@nestjs/platform-express": "^6.7.2",
     "crypto": "^1.0.1",
+    "express-rate-limit": "^5.0.0",
     "lodash": "^4.17.15",
     "mongoose": "^5.7.12",
     "passport": "^0.4.0",
