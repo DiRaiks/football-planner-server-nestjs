@@ -137,7 +137,7 @@ export class TelegramBotService {
       const friends = player.friends.map(friend => friend.name);
       message += `\nДрузья: ${ friends.toString() }`;
     }
-    message += `\nДата: ${ event.eventName },` +
+    message += `\nДата: ${ event.date },` +
     `\nТекущее количество игроков ${ event.playersAmount }`;
 
     this.chatIds.forEach(chatId => {
@@ -151,7 +151,7 @@ export class TelegramBotService {
       const friends = player.friends.map(friend => friend.name);
       message += `\nДрузья: ${ friends.toString() }`;
     }
-    message += `\nДата: ${ event.eventName },` +
+    message += `\nДата: ${ event.date },` +
     `\nТекущее количество игроков ${ event.playersAmount }`;
 
     this.chatIds.forEach(chatId => {
