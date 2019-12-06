@@ -31,16 +31,16 @@ export class TelegramBotService {
   }
 
   private initBot(token: string) {
-    const socksAgent = new SocksAgent({
-      socksHost: '34.84.57.254',
-      socksPort: '22080',
-    });
-    const bot = new TelegrafBot(token, {
-      telegram: {
-        agent: socksAgent,
-      },
-    });
-    // const bot = new TelegrafBot(token);
+    // const socksAgent = new SocksAgent({
+    //   socksHost: '34.84.57.254',
+    //   socksPort: '22080',
+    // });
+    // const bot = new TelegrafBot(token, {
+    //   telegram: {
+    //     agent: socksAgent,
+    //   },
+    // });
+    const bot = new TelegrafBot(token);
 
     bot.start((ctx: any) => ctx.reply('Hello!'));
     bot.command('init', (ctx) => {
