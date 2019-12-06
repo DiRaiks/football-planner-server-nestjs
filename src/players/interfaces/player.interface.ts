@@ -7,5 +7,5 @@ export interface Player extends Document {
   readonly date: string;
   readonly status: boolean;
   readonly eventId: string;
-  readonly userId: number;
+  readonly userId: string;
 }

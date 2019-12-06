@@ -8,6 +8,7 @@ import { EventsModule } from './events/events.module';
 import { PlayersModule } from './players/players.module';
 import { ConfigModule } from './config/config.module';
 import { MongooseConfigService } from './mongoose-config/mongoose-config.service';
+import { TelegramBotModule } from './telegram-bot/telegram-bot.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { MongooseConfigService } from './mongoose-config/mongoose-config.service
     UsersModule,
     EventsModule,
     PlayersModule,
+    TelegramBotModule,
   ],
   controllers: [AppController],
   providers: [AppService, MongooseConfigService],

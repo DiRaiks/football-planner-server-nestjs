@@ -3,17 +3,22 @@ import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Event } from './interfaces/event.interface';
 import { CreateEventDTO } from './dto/create-event.dto';
+import { TelegramBotService } from '../telegram-bot/telegram-bot.service';
 
 @Injectable()
 export class EventsService {
-  constructor(@InjectModel('Event') private readonly eventModel: Model<Event>) {}
+  constructor(
+    @InjectModel('Event') private readonly eventModel: Model<Event>,
+    private readonly telegramBotService: TelegramBotService,
+  ) {}
 
   async getEvents(): Promise<Event[]> {
     return await this.eventModel.find().exec();
   }
 
   async saveEvent(createEventDTO: CreateEventDTO): Promise<Event[]> {
-    await this.eventModel(createEventDTO).save();
+    const savedEvent = await this.eventModel(createEventDTO).save();
+    this.telegramBotService.sendAddEventMessage(savedEvent);
     return await this.eventModel.find().exec();
   }
 

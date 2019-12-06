@@ -21,6 +21,7 @@ export class ConfigService {
       DATABASE_USER: Joi.string().required(),
       DATABASE_PASSWORD: Joi.string().required(),
       DATABASE_NAME: Joi.string().required(),
+      BOT_TOKEN: Joi.string().required(),
     });
 
     const { error, value: validatedEnvConfig } = envVarsSchema.validate(
@@ -42,5 +43,9 @@ export class ConfigService {
 
   get databaseName(): string {
     return String(this.envConfig.DATABASE_NAME);
+  }
+
+  get botToken(): string {
+    return String(this.envConfig.BOT_TOKEN);
   }
 }
