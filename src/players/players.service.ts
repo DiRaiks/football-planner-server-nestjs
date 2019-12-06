@@ -40,7 +40,8 @@ export class PlayersService {
   async deletePlayer(playerID: string): Promise<any> {
     const deletedPlayer = await this.playerModel
       .findByIdAndRemove(playerID);
-    const players = await this.playerModel.find().exec();
+    const players = await this.playerModel
+      .find({ eventId: deletedPlayer.eventId }).exec();
     const playersAmount = calcAllPlayers(players);
     const sortedPlayers = sortBy(players, (item) => {
       return !item.status;
