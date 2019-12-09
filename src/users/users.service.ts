@@ -20,7 +20,7 @@ export class UsersService {
 
   async addUser(createUserDTO: CreateUserDTO): Promise<User> {
     const newUser = await this.userModel(createUserDTO);
-    return newUser.save();
+    return await newUser.save();
   }
 
   async editUser(userID, newUser): Promise<User> {

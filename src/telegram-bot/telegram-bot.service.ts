@@ -11,6 +11,8 @@ import { Player } from '../players/interfaces/player.interface';
 import { Event } from '../events/interfaces/event.interface';
 import { getActiveEvents, translit } from '../utils';
 import * as SocksAgent from 'socks5-https-client/lib/Agent';
+import { Chat } from './interfaces/chat.interface';
+import { CreateChatDto } from './dto/create-chat.dto';
 
 @Injectable()
 export class TelegramBotService {
@@ -18,12 +20,15 @@ export class TelegramBotService {
   private chatIds: number[] = [];
   private WizardScene: any;
   private Stage: any;
+  private readonly isDevelopment: boolean;
 
   constructor(
     config: ConfigService,
     @InjectModel('Player') private readonly playerModel: Model<Player>,
     @InjectModel('Event') private readonly eventModel: Model<Event>,
+    @InjectModel('Chat') private readonly chatModel: Model<Chat>,
   ) {
+    this.isDevelopment = config.isDevelopment;
     const botToken = config.botToken;
     this.bot = this.initBot(botToken);
     this.WizardScene = require('telegraf/scenes/wizard');
@@ -31,26 +36,30 @@ export class TelegramBotService {
   }
 
   private initBot(token: string) {
-    // const socksAgent = new SocksAgent({
-    //   socksHost: '34.84.57.254',
-    //   socksPort: '22080',
-    // });
-    // const bot = new TelegrafBot(token, {
-    //   telegram: {
-    //     agent: socksAgent,
-    //   },
-    // });
-    const bot = new TelegrafBot(token);
+    let bot;
+    if (this.isDevelopment) {
+      const socksAgent = new SocksAgent({
+        socksHost: '192.169.249.15',
+        socksPort: '61348',
+      });
+      bot = new TelegrafBot(token, {
+        telegram: {
+          agent: socksAgent,
+        },
+      });
+    } else {
+      bot = new TelegrafBot(token);
+    }
 
     bot.start((ctx: any) => ctx.reply('Hello!'));
-    bot.command('init', (ctx) => {
+    bot.command('init', async (ctx) => {
       const chatId = ctx.chat.id;
-      const message = this.saveChat(chatId);
+      const message = await this.saveChat(chatId);
       return ctx.reply(message);
     });
-    bot.command('remove', (ctx) => {
+    bot.command('remove', async (ctx) => {
       const chatId = ctx.chat.id;
-      const message = this.removeChat(chatId);
+      const message = await this.removeChat(chatId);
       return ctx.reply(message);
     });
     bot.command('help', (ctx) => {
@@ -80,17 +89,21 @@ export class TelegramBotService {
     return bot;
   }
 
-  private saveChat(chatId: number) {
-    if (this.chatIds.find((id) => id === chatId)) {
+  private async saveChat(chatId: number) {
+    const chat = await this.chatModel.findOne({ chatId }).exec();
+    if (chat) {
       return 'Chat already exist!';
     }
-    this.chatIds.push(chatId);
+    const createChatDto: CreateChatDto = { chatId };
+    const newChat = await this.chatModel(createChatDto);
+    await newChat.save();
 
     return 'Done!';
   }
 
-  private removeChat(chatId: number) {
-    this.chatIds = this.chatIds.filter(currentId => currentId !== chatId);
+  private async removeChat(chatId: number) {
+    await this.chatModel
+      .findOneAndRemove({ chatId }).exec();
 
     return 'Done!';
   }
@@ -131,21 +144,28 @@ export class TelegramBotService {
     return amountScene;
   }
 
-  sendAddPlayerMessage(player: Player, event: Event) {
-    let message = `Игрок ${ player.name } записался на матч "${ event.eventName }",`;
+  async sendAddPlayerMessage(player: Player, event: Event) {
+    const chats = await this.chatModel.find().exec();
+
+    let message = `Игрок ${ player.name } пойдёт на матч "${ event.eventName }",`;
     if (player.friends.length) {
       const friends = player.friends.map(friend => friend.name);
       message += `\nДрузья: ${ friends.toString() }`;
     }
     message += `\nДата: ${ event.date },` +
     `\nТекущее количество игроков ${ event.playersAmount }`;
+    if (!player.status) {
+      message += '\nНо это не точно.';
+    }
 
-    this.chatIds.forEach(chatId => {
-      this.bot.telegram.sendMessage(chatId, message);
+    chats.forEach(chat => {
+      this.bot.telegram.sendMessage(chat.chatId, message);
     });
   }
 
-  sendDelPlayerMessage(player: Player, event: Event) {
+  async sendDelPlayerMessage(player: Player, event: Event) {
+    const chats = await this.chatModel.find().exec();
+
     let message = `Игрок ${ player.name } не пойдет на матч "${ event.eventName }",`;
     if (player.friends.length) {
       const friends = player.friends.map(friend => friend.name);
@@ -154,21 +174,23 @@ export class TelegramBotService {
     message += `\nДата: ${ event.date },` +
     `\nТекущее количество игроков ${ event.playersAmount }`;
 
-    this.chatIds.forEach(chatId => {
-      this.bot.telegram.sendMessage(chatId, message);
+    chats.forEach(chat => {
+      this.bot.telegram.sendMessage(chat.chatId, message);
     });
   }
 
-  sendAddEventMessage(event: Event) {
+  async sendAddEventMessage(event: Event) {
+    const chats = await this.chatModel.find().exec();
+
     const message = `Создан матч "${ event.eventName }",` +
     `\nДата: ${ event.date },` +
     `\nВремя: ${ event.time },` +
     `\nМесто: ${ event.place },` +
     `\nЗапись: https://football.ukit.space/event/${ event._id },`;
 
-    this.chatIds.forEach(async chatId => {
-      const currentMessage = await this.bot.telegram.sendMessage(chatId, message);
-      await this.bot.telegram.pinChatMessage(chatId, currentMessage.message_id);
+    chats.forEach(async chat => {
+      const currentMessage = await this.bot.telegram.sendMessage(chat.chatId, message);
+      await this.bot.telegram.pinChatMessage(chat.chatId, currentMessage.message_id);
     });
   }
 }

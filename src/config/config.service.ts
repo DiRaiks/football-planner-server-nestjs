@@ -22,6 +22,7 @@ export class ConfigService {
       DATABASE_PASSWORD: Joi.string().required(),
       DATABASE_NAME: Joi.string().required(),
       BOT_TOKEN: Joi.string().required(),
+      JWT_SECRET: Joi.string().required(),
     });
 
     const { error, value: validatedEnvConfig } = envVarsSchema.validate(
@@ -47,5 +48,13 @@ export class ConfigService {
 
   get botToken(): string {
     return String(this.envConfig.BOT_TOKEN);
+  }
+
+  get isDevelopment(): boolean {
+    return Boolean(this.envConfig.NODE_ENV === 'development');
+  }
+
+  get jwtSecret(): string {
+    return String(this.envConfig.JWT_SECRET);
   }
 }

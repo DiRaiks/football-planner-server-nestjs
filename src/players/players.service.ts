@@ -17,7 +17,10 @@ export class PlayersService {
   ) {}
 
   async getPlayers(): Promise<Player[]> {
-    return await this.playerModel.find().exec();
+    const players = await this.playerModel.find().exec();
+    return sortBy(players, (item) => {
+      return !item.status;
+    });
   }
 
   async savePlayer(createPlayerDTO: CreatePlayerDTO): Promise<object> {
@@ -60,9 +63,12 @@ export class PlayersService {
       .findByIdAndUpdate(playerID, createPlayerDTO, { new: true });
   }
 
-  async getPlayersByEventId(eventID: string): Promise<Player> {
-    return await this.playerModel
+  async getPlayersByEventId(eventID: string): Promise<Player[]> {
+    const players = await this.playerModel
       .find({ eventId: eventID })
       .exec();
+    return sortBy(players, (item) => {
+      return !item.status;
+    });
   }
 }
