@@ -82,6 +82,6 @@ export class AuthService {
     const { _id } = await this.usersService.addUser(newUser);
     const payload = { email, userId: _id };
 
-    return { email, name, token: this.jwtService.sign(payload) };
+    return { _id, email, name, token: this.jwtService.sign(payload) };
   }
 }
