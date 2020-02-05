@@ -35,7 +35,7 @@ export class PlayersService {
     const changedEvent = await this.eventsService
       .editEventField(createPlayerDTO.eventId, 'playersAmount', playersAmount);
 
-    this.telegramBotService.sendAddPlayerMessage(createPlayerDTO, changedEvent);
+    await this.telegramBotService.sendAddPlayerMessage(createPlayerDTO, changedEvent);
 
     return { players: sortedPlayers, event: changedEvent };
   }
