@@ -10,7 +10,6 @@ import { ConfigService } from '../config/config.service';
 import { Player } from '../players/interfaces/player.interface';
 import { Event } from '../events/interfaces/event.interface';
 import { getActiveEvents, translit } from '../utils';
-import * as SocksAgent from 'socks5-https-client/lib/Agent';
 import { Chat } from './interfaces/chat.interface';
 import { CreateChatDto } from './dto/create-chat.dto';
 
@@ -38,15 +37,7 @@ export class TelegramBotService {
   private initBot(token: string) {
     let bot;
     if (this.isDevelopment) {
-      const socksAgent = new SocksAgent({
-        socksHost: '192.169.249.15',
-        socksPort: '61348',
-      });
-      bot = new TelegrafBot(token, {
-        telegram: {
-          agent: socksAgent,
-        },
-      });
+      bot = new TelegrafBot(token);
     } else {
       bot = new TelegrafBot(token);
     }
@@ -186,7 +177,7 @@ export class TelegramBotService {
     `\nДата: ${ event.date },` +
     `\nВремя: ${ event.time },` +
     `\nМесто: ${ event.place },` +
-    `\nЗапись: https://football.ukit.space/event/${ event._id },`;
+    `\nЗапись: https://www.football-planner.ru/event/${ event._id },`;
 
     chats.forEach(async chat => {
       const currentMessage = await this.bot.telegram.sendMessage(chat.chatId, message);
