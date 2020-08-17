@@ -135,7 +135,7 @@ export class TelegramBotService {
     return amountScene;
   }
 
-  async sendAddPlayerMessage(player: Player, event: Event) {
+  async sendAddPlayerMessage(player: Player, event: Event, exactly: number, maybe: number) {
     const chats = await this.chatModel.find().exec();
 
     let message = `Игрок ${ player.name } пойдёт на матч "${ event.eventName }",`;
@@ -144,7 +144,7 @@ export class TelegramBotService {
       message += `\nДрузья: ${ friends.toString() }`;
     }
     message += `\nДата: ${ event.date },` +
-    `\nТекущее количество игроков ${ event.playersAmount }`;
+    `\nТекущее количество игроков: ${ event.playersAmount } (точно: ${exactly}, возможно: ${maybe})`;
     if (!player.status) {
       message += '\nНо это не точно.';
     }
@@ -154,7 +154,7 @@ export class TelegramBotService {
     });
   }
 
-  async sendDelPlayerMessage(player: Player, event: Event) {
+  async sendDelPlayerMessage(player: Player, event: Event, exactly: number, maybe: number) {
     const chats = await this.chatModel.find().exec();
 
     let message = `Игрок ${ player.name } не пойдет на матч "${ event.eventName }",`;
@@ -163,7 +163,7 @@ export class TelegramBotService {
       message += `\nДрузья: ${ friends.toString() }`;
     }
     message += `\nДата: ${ event.date },` +
-    `\nТекущее количество игроков ${ event.playersAmount }`;
+    `\nТекущее количество игроков: ${ event.playersAmount } (точно: ${exactly}, возможно: ${maybe})`;
 
     chats.forEach(chat => {
       this.bot.telegram.sendMessage(chat.chatId, message);

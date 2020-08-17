@@ -27,7 +27,7 @@ export class PlayersService {
     await this.playerModel(createPlayerDTO).save();
     const players = await this.playerModel
       .find({ eventId: createPlayerDTO.eventId }).exec();
-    const playersAmount = calcAllPlayers(players);
+    const { all: playersAmount, exactly, maybe } = calcAllPlayers(players);
     const sortedPlayers = sortBy(players, (item) => {
       return !item.status;
     });
@@ -35,7 +35,7 @@ export class PlayersService {
     const changedEvent = await this.eventsService
       .editEventField(createPlayerDTO.eventId, 'playersAmount', playersAmount);
 
-    await this.telegramBotService.sendAddPlayerMessage(createPlayerDTO, changedEvent);
+    await this.telegramBotService.sendAddPlayerMessage(createPlayerDTO, changedEvent, exactly, maybe);
 
     return { players: sortedPlayers, event: changedEvent };
   }
@@ -45,7 +45,7 @@ export class PlayersService {
       .findByIdAndRemove(playerID);
     const players = await this.playerModel
       .find({ eventId: deletedPlayer.eventId }).exec();
-    const playersAmount = calcAllPlayers(players);
+    const { all: playersAmount, exactly, maybe } = calcAllPlayers(players);
     const sortedPlayers = sortBy(players, (item) => {
       return !item.status;
     });
@@ -53,7 +53,7 @@ export class PlayersService {
     const changedEvent = await this.eventsService
       .editEventField(deletedPlayer.eventId, 'playersAmount', playersAmount);
 
-    this.telegramBotService.sendDelPlayerMessage(deletedPlayer, changedEvent);
+    this.telegramBotService.sendDelPlayerMessage(deletedPlayer, changedEvent, exactly, maybe);
 
     return { deletedPlayer, players: sortedPlayers, event: changedEvent };
   }
