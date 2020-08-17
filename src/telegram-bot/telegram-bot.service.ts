@@ -9,7 +9,7 @@ import * as Composer from 'telegraf/composer';
 import { ConfigService } from '../config/config.service';
 import { Player } from '../players/interfaces/player.interface';
 import { Event } from '../events/interfaces/event.interface';
-import { getActiveEvents, translit } from '../utils';
+import { calcAllPlayers, getActiveEvents, translit } from '../utils';
 import { Chat } from './interfaces/chat.interface';
 import { CreateChatDto } from './dto/create-chat.dto';
 
@@ -105,7 +105,10 @@ export class TelegramBotService {
     stepHandler.action(/event/gm, async (ctx) => {
       const eventId = ctx.callbackQuery.data.split('_')[1];
       const event = await this.eventModel.findById(eventId);
-      ctx.reply(`Текущее количество игроков: ${ event.playersAmount }`);
+      const players = await this.playerModel
+        .find({ eventId: event._id }).exec();
+      const { all: playersAmount, exactly, maybe } = calcAllPlayers(players);
+      ctx.reply(`Текущее количество игроков: ${ playersAmount } (точно: ${exactly}, возможно: ${maybe})`) ;
       return ctx.scene.leave();
     })
     stepHandler.command('exit', (ctx) => {
