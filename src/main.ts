@@ -22,9 +22,9 @@ const registrationLimiter = new RateLimit({
 });
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  // app.use(rateLimiter);
-  // app.use('/auth/registration', registrationLimiter);
+  const app = await NestFactory.create(AppModule, { httpsOptions });
+  app.use(rateLimiter);
+  app.use('/auth/registration', registrationLimiter);
   app.enableCors();
   await app.listen(3000);
 }
