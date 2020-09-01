@@ -59,8 +59,18 @@ export class PlayersService {
   }
 
   async editPlayer(playerID: string, createPlayerDTO: CreatePlayerDTO): Promise<Player> {
-    return await this.playerModel
+    const changedPlayer = await this.playerModel
       .findByIdAndUpdate(playerID, createPlayerDTO, { new: true });
+    const players = await this.playerModel
+      .find({ eventId: createPlayerDTO.eventId }).exec();
+    const { all: playersAmount, exactly, maybe } = calcAllPlayers(players);
+
+    const changedEvent = await this.eventsService
+      .editEventField(createPlayerDTO.eventId, 'playersAmount', playersAmount);
+
+    this.telegramBotService.sendEditPlayerMessage(changedPlayer, changedEvent, exactly, maybe);
+
+    return changedPlayer;
   }
 
   async getPlayersByEventId(eventID: string): Promise<Player[]> {

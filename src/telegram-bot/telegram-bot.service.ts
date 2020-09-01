@@ -173,6 +173,22 @@ export class TelegramBotService {
     });
   }
 
+  async sendEditPlayerMessage(player: Player, event: Event, exactly: number, maybe: number) {
+    const chats = await this.chatModel.find().exec();
+
+    let message = `Игрок ${ player.name } изменил свою запись на матч "${ event.eventName }",`;
+    if (player.friends.length) {
+      const friends = player.friends.map(friend => friend.name);
+      message += `\nДрузья: ${ friends.toString() }`;
+    }
+    message += `\nДата: ${ event.date },` +
+      `\nТекущее количество игроков: ${ event.playersAmount } (точно: ${exactly}, возможно: ${maybe})`;
+
+    chats.forEach(chat => {
+      this.bot.telegram.sendMessage(chat.chatId, message);
+    });
+  }
+
   async sendAddEventMessage(event: Event) {
     const chats = await this.chatModel.find().exec();
 

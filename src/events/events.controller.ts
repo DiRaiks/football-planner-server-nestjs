@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Request, UseGuards, Delete, Res, Query, NotFoundException, HttpStatus, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Request, UseGuards, Delete, Res, Query, NotFoundException, HttpStatus, Put, Param } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { EventsService } from './events.service';
 import { ValidateObjectId } from '../shared/pipes/validate-object-id.pipes';
@@ -37,7 +37,7 @@ export class EventsController {
 
   @UseGuards(AuthGuard('jwt'))
   @Get('get')
-  async getEvent(
+  async getEventOld(
     @Res() res,
     @Query('eventID',
       new ValidateObjectId()) eventID,
@@ -47,10 +47,33 @@ export class EventsController {
     return res.status(HttpStatus.OK).json(event);
   }
 
+  @UseGuards(AuthGuard('jwt'))
+  @Get('get/:eventID')
+  async getEvent(
+    @Res() res,
+    @Param('eventID',
+      new ValidateObjectId()) eventID,
+  ) {
+    const event = await this.eventsService.getEvent(eventID);
+    if (!event) { throw new NotFoundException('Event does not exist!'); }
+    return res.status(HttpStatus.OK).json(event);
+  }
+
   @Put('/change')
-  async changeEvent(
+  async changeEventOld(
     @Res() res,
     @Query('eventID', new ValidateObjectId()) eventID,
+    @Body() createEventDTO: CreateEventDTO,
+  ) {
+    const editedEvent = await this.eventsService.editEvent(eventID, createEventDTO);
+    if (!editedEvent) { throw new NotFoundException('Event does not exist!'); }
+    return res.status(HttpStatus.OK).json(editedEvent);
+  }
+
+  @Put('/change/:eventID')
+  async changeEvent(
+    @Res() res,
+    @Param('eventID', new ValidateObjectId()) eventID,
     @Body() createEventDTO: CreateEventDTO,
   ) {
     const editedEvent = await this.eventsService.editEvent(eventID, createEventDTO);
