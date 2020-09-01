@@ -3,10 +3,14 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from './interfaces/user.interface';
 import { CreateUserDTO } from './dto/create-user.dto';
+import { Player } from '../players/interfaces/player.interface';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel('User') private readonly userModel: Model<User>) { }
+  constructor(
+    @InjectModel('User') private readonly userModel: Model<User>,
+    @InjectModel('Player') private readonly playerModel: Model<Player>,
+  ) { }
 
   async getUsers(): Promise<User[]> {
     return await this.userModel.find().exec();
@@ -26,6 +30,11 @@ export class UsersService {
   async editUser(userID, newUser): Promise<User> {
     return await this.userModel
       .findByIdAndUpdate(userID, newUser, { new: true });
+  }
+
+  async getUserEventsCount(userId: string): Promise<number> {
+    const eventsCount = await this.playerModel.find({ userId });
+    return eventsCount.length;
   }
 
   async deleteUser(userID): Promise<any> {
