@@ -196,7 +196,7 @@ export class TelegramBotService {
     `\nДата: ${ event.date },` +
     `\nВремя: ${ event.time },` +
     `\nМесто: ${ event.place },` +
-    `\nЗапись: https://www.football-planner.ru/event/${ event._id },`;
+    `\nЗапись: https://www.football-planner.ru/events/${ event._id },`;
 
     chats.forEach(async chat => {
       const currentMessage = await this.bot.telegram.sendMessage(chat.chatId, message);
