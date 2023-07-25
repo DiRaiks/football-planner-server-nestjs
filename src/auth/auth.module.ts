@@ -19,7 +19,7 @@ import { ConfigModule } from '../config/config.module';
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         secret: configService.jwtSecret,
-        signOptions: { expiresIn: '2 day' },
+        signOptions: { expiresIn: '30 day' },
       }),
       inject: [ConfigService],
     }),
