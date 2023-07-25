@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as RateLimit from 'express-rate-limit';
 import { AppModule } from './app.module';
 
-let httpsOptions = {}
+let httpsOptions = {};
 
 if (process.env.NODE_ENV === 'production') {
   httpsOptions = {
@@ -12,7 +12,7 @@ if (process.env.NODE_ENV === 'production') {
   };
 }
 const rateLimiter = new RateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
+  windowMs: 30 * 1000, // 15 minutes
   max: 100, // limit each IP to 100 requests per windowMs
 });
 
