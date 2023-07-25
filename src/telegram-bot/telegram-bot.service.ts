@@ -43,25 +43,28 @@ export class TelegramBotService {
     }
 
     bot.start((ctx: any) => ctx.reply('Hello!'));
-    bot.command('init', async (ctx) => {
+    bot.command('init', async ctx => {
       const chatId = ctx.chat.id;
       const message = await this.saveChat(chatId);
       return ctx.reply(message);
     });
-    bot.command('remove', async (ctx) => {
+    bot.command('remove', async ctx => {
       const chatId = ctx.chat.id;
       const message = await this.removeChat(chatId);
       return ctx.reply(message);
     });
-    bot.command('help', (ctx) => {
-      const message = `/init - зарегистрировать чат для отправки уведомлений` +
+    bot.command('help', ctx => {
+      const message =
+        `/init - зарегистрировать чат для отправки уведомлений` +
         `\n/remove - не отправлять уведомления в текущий чат` +
         `\n/amt - узнать количество записавшихся игроков`;
       return ctx.reply(message);
     });
-    bot.hears(/фото/gm, (ctx) => {
+    bot.hears(/фото/gm, ctx => {
       const query = ctx.update.message.text.split(' ')[1];
-      if (!query) { return; }
+      if (!query) {
+        return;
+      }
       ctx.replyWithPhoto({
         url: `https://source.unsplash.com/600x400/?${translit(query)}`,
         filename: 'test.jpg',
@@ -93,8 +96,7 @@ export class TelegramBotService {
   }
 
   private async removeChat(chatId: number) {
-    await this.chatModel
-      .findOneAndRemove({ chatId }).exec();
+    await this.chatModel.findOneAndRemove({ chatId }).exec();
 
     return 'Done!';
   }
@@ -102,23 +104,26 @@ export class TelegramBotService {
   private createAmountScene() {
     const stepHandler = new Composer();
 
-    stepHandler.action(/event/gm, async (ctx) => {
+    stepHandler.action(/event/gm, async ctx => {
       const eventId = ctx.callbackQuery.data.split('_')[1];
       const event = await this.eventModel.findById(eventId);
       const players = await this.playerModel
-        .find({ eventId: event._id }).exec();
+        .find({ eventId: event._id })
+        .exec();
       const { all: playersAmount, exactly, maybe } = calcAllPlayers(players);
-      ctx.reply(`Текущее количество игроков: ${ playersAmount } (точно: ${exactly}, возможно: ${maybe})`) ;
+      ctx.reply(
+        `Текущее количество игроков: ${playersAmount} (точно: ${exactly}, возможно: ${maybe})`,
+      );
       return ctx.scene.leave();
-    })
-    stepHandler.command('exit', (ctx) => {
-      ctx.reply('exit')
+    });
+    stepHandler.command('exit', ctx => {
+      ctx.reply('exit');
       return ctx.scene.leave();
-    })
+    });
 
     const amountScene = new WizardScene(
       'amount',
-      async (ctx) => {
+      async ctx => {
         const allEvents = await this.eventModel.find().exec();
         const activeEvents = getActiveEvents(allEvents);
 
@@ -127,7 +132,10 @@ export class TelegramBotService {
           return ctx.scene.leave();
         }
         const buttons = activeEvents.map(event => {
-          return Markup.callbackButton(`Матч: ${event.eventName}`, `event_${event._id}`);
+          return Markup.callbackButton(
+            `Матч: ${event.eventName}`,
+            `event_${event._id}`,
+          );
         });
         ctx.reply('Какой матч?', Markup.inlineKeyboard(buttons).extra());
         return ctx.wizard.next();
@@ -138,16 +146,22 @@ export class TelegramBotService {
     return amountScene;
   }
 
-  async sendAddPlayerMessage(player: Player, event: Event, exactly: number, maybe: number) {
+  async sendAddPlayerMessage(
+    player: Player,
+    event: Event,
+    exactly: number,
+    maybe: number,
+  ) {
     const chats = await this.chatModel.find().exec();
 
-    let message = `Игрок ${ player.name } пойдёт на матч "${ event.eventName }",`;
+    let message = `Игрок ${player.name} пойдёт на матч "${event.eventName}",`;
     if (player.friends.length) {
       const friends = player.friends.map(friend => friend.name);
-      message += `\nДрузья: ${ friends.toString() }`;
+      message += `\nДрузья: ${friends.toString()}`;
     }
-    message += `\nДата: ${ event.date },` +
-    `\nТекущее количество игроков: ${ event.playersAmount } (точно: ${exactly}, возможно: ${maybe})`;
+    message +=
+      `\nДата: ${event.date},` +
+      `\nТекущее количество игроков: ${event.playersAmount} (точно: ${exactly}, возможно: ${maybe})`;
     if (!player.status) {
       message += '\nНо это не точно.';
     }
@@ -157,32 +171,44 @@ export class TelegramBotService {
     });
   }
 
-  async sendDelPlayerMessage(player: Player, event: Event, exactly: number, maybe: number) {
+  async sendDelPlayerMessage(
+    player: Player,
+    event: Event,
+    exactly: number,
+    maybe: number,
+  ) {
     const chats = await this.chatModel.find().exec();
 
-    let message = `Игрок ${ player.name } не пойдет на матч "${ event.eventName }",`;
+    let message = `Игрок ${player.name} не пойдет на матч "${event.eventName}",`;
     if (player.friends.length) {
       const friends = player.friends.map(friend => friend.name);
-      message += `\nДрузья: ${ friends.toString() }`;
+      message += `\nДрузья: ${friends.toString()}`;
     }
-    message += `\nДата: ${ event.date },` +
-    `\nТекущее количество игроков: ${ event.playersAmount } (точно: ${exactly}, возможно: ${maybe})`;
+    message +=
+      `\nДата: ${event.date},` +
+      `\nТекущее количество игроков: ${event.playersAmount} (точно: ${exactly}, возможно: ${maybe})`;
 
     chats.forEach(chat => {
       this.bot.telegram.sendMessage(chat.chatId, message);
     });
   }
 
-  async sendEditPlayerMessage(player: Player, event: Event, exactly: number, maybe: number) {
+  async sendEditPlayerMessage(
+    player: Player,
+    event: Event,
+    exactly: number,
+    maybe: number,
+  ) {
     const chats = await this.chatModel.find().exec();
 
-    let message = `Игрок ${ player.name } изменил свою запись на матч "${ event.eventName }",`;
+    let message = `Игрок ${player.name} изменил свою запись на матч "${event.eventName}",`;
     if (player.friends.length) {
       const friends = player.friends.map(friend => friend.name);
-      message += `\nДрузья: ${ friends.toString() }`;
+      message += `\nДрузья: ${friends.toString()}`;
     }
-    message += `\nДата: ${ event.date },` +
-      `\nТекущее количество игроков: ${ event.playersAmount } (точно: ${exactly}, возможно: ${maybe})`;
+    message +=
+      `\nДата: ${event.date},` +
+      `\nТекущее количество игроков: ${event.playersAmount} (точно: ${exactly}, возможно: ${maybe})`;
 
     chats.forEach(chat => {
       this.bot.telegram.sendMessage(chat.chatId, message);
@@ -192,15 +218,22 @@ export class TelegramBotService {
   async sendAddEventMessage(event: Event) {
     const chats = await this.chatModel.find().exec();
 
-    const message = `Создан матч "${ event.eventName }",` +
-    `\nДата: ${ event.date },` +
-    `\nВремя: ${ event.time },` +
-    `\nМесто: ${ event.place },` +
-    `\nЗапись: https://www.football-planner.ru/events/${ event._id },`;
+    const message =
+      `Создан матч "${event.eventName}",` +
+      `\nДата: ${event.date},` +
+      `\nВремя: ${event.time},` +
+      `\nМесто: ${event.place},` +
+      `\nЗапись: https://football-planner.ru/events/${event._id},`;
 
     chats.forEach(async chat => {
-      const currentMessage = await this.bot.telegram.sendMessage(chat.chatId, message);
-      await this.bot.telegram.pinChatMessage(chat.chatId, currentMessage.message_id);
+      const currentMessage = await this.bot.telegram.sendMessage(
+        chat.chatId,
+        message,
+      );
+      await this.bot.telegram.pinChatMessage(
+        chat.chatId,
+        currentMessage.message_id,
+      );
     });
   }
 }
