@@ -2,7 +2,7 @@
   "name": "football-planner-server",
   "version": "0.0.1",
   "description": "",
-  "author": "",
+  "author": "DiRaiks",
   "license": "MIT",
   "scripts": {
     "prebuild": "rimraf dist",
